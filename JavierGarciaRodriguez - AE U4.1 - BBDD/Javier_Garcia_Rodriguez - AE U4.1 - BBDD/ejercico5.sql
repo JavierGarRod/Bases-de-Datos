@@ -60,7 +60,6 @@ CREATE TABLE Vehiculo (
     IdOficina NUMBER(14),
     CONSTRAINT fk_vehiculo_marca FOREIGN KEY (IdMarca) REFERENCES Marca(IdMarca) ON DELETE CASCADE,
     CONSTRAINT fk_vehiculo_modelo FOREIGN KEY (IdModelo) REFERENCES Modelo(IdModelo) ON DELETE CASCADE
-    -- Nota: IdOficina no está definido en el modelo relacional, se puede ajustar según contexto
 );
 
 CREATE TABLE Alquiler (
