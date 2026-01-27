@@ -11,60 +11,49 @@ CREATE TABLE Legislacion (
     Año_Ejecucion NUMBER(4),
     Ley_Que_La_Recoge VARCHAR2(128),
     Sancion VARCHAR2(128),
-    Participacion VARCHAR2(16),
+    Participacion VARCHAR2(32),
     Titulo VARCHAR2(128),
     Tipo VARCHAR2(32),
     Ambito_Territorial VARCHAR2(64),
     Referencia_Oficial VARCHAR2(64),
     Boletin_Oficial VARCHAR2(32),
-    CONSTRAINT ck_año_ejecucion CHECK (Año_Ejecucion BETWEEN 1256 AND 2025),
+    CONSTRAINT ck_año CHECK (Año_Ejecucion BETWEEN 1256 AND 2025),
     CONSTRAINT ck_participacion CHECK (UPPER(Participacion) IN ('A FAVOR','EN CONTRA')),
-    CONSTRAINT ck_tipo_legislacion CHECK (UPPER(Tipo) IN ('LABORAL','PENAL','COMERCIAL','AMBIENTAL','CIVIL')),
+    CONSTRAINT ck_tipo CHECK (UPPER(Tipo) IN ('LABORAL','PENAL','COMERCIAL','AMBIENTAL','CIVIL')),
     CONSTRAINT ck_boletin CHECK (UPPER(Boletin_Oficial) IN ('NACIONAL','AUTONÓMICO','PROVINCIAL','INTERNACIONAL'))
 );
 
-CREATE TABLE Organismo (
-    Organismo_Id NUMBER(14) PRIMARY KEY,
+CREATE TABLE Administracion (
+    Administracion_Id NUMBER(14) PRIMARY KEY,
     Sede_Id NUMBER(14),
     Correo VARCHAR2(64),
     Direccion VARCHAR2(128),
     Nombre VARCHAR2(64),
     Proposito VARCHAR2(128),
     Legislacion_Id NUMBER(14),
-    CONSTRAINT fk_organismo_sede FOREIGN KEY (Sede_Id) REFERENCES Sede(Sede_Id) ON DELETE CASCADE,
-    CONSTRAINT fk_organismo_legislacion FOREIGN KEY (Legislacion_Id) REFERENCES Legislacion(Legislacion_Id) ON DELETE CASCADE
+    CONSTRAINT fk_admin_sede FOREIGN KEY (Sede_Id) REFERENCES Sede(Sede_Id) ON DELETE CASCADE,
+    CONSTRAINT fk_admin_leg FOREIGN KEY (Legislacion_Id) REFERENCES Legislacion(Legislacion_Id) ON DELETE CASCADE
 );
 
-CREATE TABLE Inspector (
-    Inspector_Id NUMBER(14) PRIMARY KEY,
-    Formacion VARCHAR2(128),
-    Nombre VARCHAR2(64) NOT NULL,
-    DNI VARCHAR2(9) UNIQUE NOT NULL,
-    Edad NUMBER(3),
-    Especialidad VARCHAR2(64),
-    Condicion VARCHAR2(64),
-    Organizacion VARCHAR2(64),
-    Registro_Inspeccion_Id NUMBER(14),
-    CONSTRAINT fk_inspector_registro FOREIGN KEY (Registro_Inspeccion_Id) REFERENCES Registro_Inspeccion(Registro_Inspeccion_Id) ON DELETE CASCADE
+CREATE TABLE Nacional (
+    Nacional_Id NUMBER(14) PRIMARY KEY,
+    BOE VARCHAR2(64),
+    Administracion_Id NUMBER(14),
+    CONSTRAINT fk_nacional_admin FOREIGN KEY (Administracion_Id) REFERENCES Administracion(Administracion_Id) ON DELETE CASCADE
 );
 
-CREATE TABLE Formacion (
-    Formacion_Id NUMBER(14) PRIMARY KEY,
-    Inspector_Id NUMBER(14),
-    CONSTRAINT fk_formacion_inspector FOREIGN KEY (Inspector_Id) REFERENCES Inspector(Inspector_Id) ON DELETE CASCADE
+CREATE TABLE Autonomica (
+    Autonomica_Id NUMBER(14) PRIMARY KEY,
+    BOJA VARCHAR2(64),
+    Administracion_Id NUMBER(14),
+    CONSTRAINT fk_autonomica_admin FOREIGN KEY (Administracion_Id) REFERENCES Administracion(Administracion_Id) ON DELETE CASCADE
 );
 
-CREATE TABLE Especialidad (
-    Especialidad_Id NUMBER(14) PRIMARY KEY,
-    Inspector_Id NUMBER(14),
-    CONSTRAINT fk_especialidad_inspector FOREIGN KEY (Inspector_Id) REFERENCES Inspector(Inspector_Id) ON DELETE CASCADE
-);
-
-CREATE TABLE Organizacion_ITSS (
-    Organizacion_Id NUMBER(14) PRIMARY KEY,
-    Historial VARCHAR2(256),
-    Inspector_Id NUMBER(14),
-    CONSTRAINT fk_organizacion_inspector FOREIGN KEY (Inspector_Id) REFERENCES Inspector(Inspector_Id) ON DELETE CASCADE
+CREATE TABLE Local (
+    Local_Id NUMBER(14) PRIMARY KEY,
+    BOP VARCHAR2(64),
+    Administracion_Id NUMBER(14),
+    CONSTRAINT fk_local_admin FOREIGN KEY (Administracion_Id) REFERENCES Administracion(Administracion_Id) ON DELETE CASCADE
 );
 
 CREATE TABLE Inspeccion (
@@ -76,10 +65,7 @@ CREATE TABLE Inspeccion (
     Inspector_Id NUMBER(14),
     Legislacion_Id NUMBER(14),
     Inspeccion_Origen_Id NUMBER(14),
-    CONSTRAINT fk_inspeccion_organizacion FOREIGN KEY (Organizacion_Id) REFERENCES Organizacion_ITSS(Organizacion_Id) ON DELETE CASCADE,
-    CONSTRAINT fk_inspeccion_inspector FOREIGN KEY (Inspector_Id) REFERENCES Inspector(Inspector_Id) ON DELETE CASCADE,
-    CONSTRAINT fk_inspeccion_legislacion FOREIGN KEY (Legislacion_Id) REFERENCES Legislacion(Legislacion_Id) ON DELETE CASCADE,
-    CONSTRAINT fk_inspeccion_origen FOREIGN KEY (Inspeccion_Origen_Id) REFERENCES Inspeccion(Inspeccion_Id) ON DELETE CASCADE
+    Empresa_Id NUMBER(14)
 );
 
 CREATE TABLE Registro_Inspeccion (
@@ -91,10 +77,48 @@ CREATE TABLE Registro_Inspeccion (
     CONSTRAINT fk_registro_inspeccion FOREIGN KEY (Inspeccion_Id) REFERENCES Inspeccion(Inspeccion_Id) ON DELETE CASCADE
 );
 
+CREATE TABLE Prueba (
+    Prueba_Id NUMBER(14) PRIMARY KEY,
+    Tipo_Prueba VARCHAR2(32),
+    Colaboradores VARCHAR2(128),
+    Registro_Inspeccion_Id NUMBER(14),
+    CONSTRAINT fk_prueba_registro FOREIGN KEY (Registro_Inspeccion_Id) REFERENCES Registro_Inspeccion(Registro_Inspeccion_Id) ON DELETE CASCADE,
+    CONSTRAINT ck_tipo_prueba CHECK (UPPER(Tipo_Prueba) IN ('APTO','NO APTO'))
+);
+
+CREATE TABLE Inspector (
+    Inspector_Id NUMBER(14) PRIMARY KEY,
+    Formacion VARCHAR2(128),
+    Nombre VARCHAR2(64),
+    DNI VARCHAR2(9) UNIQUE,
+    Edad NUMBER(3),
+    Especialidad VARCHAR2(64),
+    Condicion VARCHAR2(64),
+    Registro_Inspeccion_Id NUMBER(14),
+    Prueba_Id NUMBER(14),
+    Administracion_Id NUMBER(14),
+    CONSTRAINT fk_inspector_registro FOREIGN KEY (Registro_Inspeccion_Id) REFERENCES Registro_Inspeccion(Registro_Inspeccion_Id) ON DELETE CASCADE,
+    CONSTRAINT fk_inspector_prueba FOREIGN KEY (Prueba_Id) REFERENCES Prueba(Prueba_Id) ON DELETE CASCADE,
+    CONSTRAINT fk_inspector_admin FOREIGN KEY (Administracion_Id) REFERENCES Administracion(Administracion_Id) ON DELETE CASCADE
+);
+
+CREATE TABLE Organizacion_ITSS (
+    Organizacion_Id NUMBER(14) PRIMARY KEY,
+    Historial VARCHAR2(256),
+    Inspector_Id NUMBER(14),
+    CONSTRAINT fk_org_inspector FOREIGN KEY (Inspector_Id) REFERENCES Inspector(Inspector_Id) ON DELETE CASCADE
+);
+
 CREATE TABLE Observacion (
     Observacion_Id NUMBER(14) PRIMARY KEY,
     Registro_Inspeccion_Id NUMBER(14),
-    CONSTRAINT fk_observacion_registro FOREIGN KEY (Registro_Inspeccion_Id) REFERENCES Registro_Inspeccion(Registro_Inspeccion_Id) ON DELETE CASCADE
+    CONSTRAINT fk_obs_registro FOREIGN KEY (Registro_Inspeccion_Id) REFERENCES Registro_Inspeccion(Registro_Inspeccion_Id) ON DELETE CASCADE
+);
+
+CREATE TABLE Colaboradores (
+    Colaboradores_Id NUMBER(14) PRIMARY KEY,
+    Registro_Inspeccion_Id NUMBER(14),
+    CONSTRAINT fk_colab_registro FOREIGN KEY (Registro_Inspeccion_Id) REFERENCES Registro_Inspeccion(Registro_Inspeccion_Id) ON DELETE CASCADE
 );
 
 CREATE TABLE Certificado (
@@ -106,37 +130,58 @@ CREATE TABLE Certificado (
     Numero_Referencia VARCHAR2(32),
     Fecha_Emision DATE,
     Fecha_Caducidad DATE,
-    CONSTRAINT fk_certificado_inspeccion FOREIGN KEY (Inspeccion_Id) REFERENCES Inspeccion(Inspeccion_Id) ON DELETE CASCADE,
-    CONSTRAINT fk_certificado_legislacion FOREIGN KEY (Legislacion_Id) REFERENCES Legislacion(Legislacion_Id) ON DELETE CASCADE,
-    CONSTRAINT ck_estado_certificacion CHECK (UPPER(Estado_Certificacion) IN ('APROBADO','DENEGADO'))
+    CONSTRAINT fk_cert_inspeccion FOREIGN KEY (Inspeccion_Id) REFERENCES Inspeccion(Inspeccion_Id) ON DELETE CASCADE,
+    CONSTRAINT fk_cert_leg FOREIGN KEY (Legislacion_Id) REFERENCES Legislacion(Legislacion_Id) ON DELETE CASCADE,
+    CONSTRAINT ck_estado_cert CHECK (UPPER(Estado_Certificacion) IN ('APROBADO','DENEGADO'))
 );
 
 CREATE TABLE Legislacion_Inspector (
     Legislacion_Id NUMBER(14),
     Inspector_Id NUMBER(14),
-    CONSTRAINT pk_legislacion_inspector PRIMARY KEY (Legislacion_Id, Inspector_Id),
-    CONSTRAINT fk_li_legislacion FOREIGN KEY (Legislacion_Id) REFERENCES Legislacion(Legislacion_Id) ON DELETE CASCADE,
-    CONSTRAINT fk_li_inspector FOREIGN KEY (Inspector_Id) REFERENCES Inspector(Inspector_Id) ON DELETE CASCADE
+    CONSTRAINT pk_leg_ins PRIMARY KEY (Legislacion_Id, Inspector_Id),
+    CONSTRAINT fk_li_leg FOREIGN KEY (Legislacion_Id) REFERENCES Legislacion(Legislacion_Id) ON DELETE CASCADE,
+    CONSTRAINT fk_li_ins FOREIGN KEY (Inspector_Id) REFERENCES Inspector(Inspector_Id) ON DELETE CASCADE
 );
 
 CREATE TABLE Legislacion_Certificado (
     Certificado_Id NUMBER(14),
     Legislacion_Id NUMBER(14),
-    CONSTRAINT pk_legislacion_certificado PRIMARY KEY (Certificado_Id, Legislacion_Id),
-    CONSTRAINT fk_lc_certificado FOREIGN KEY (Certificado_Id) REFERENCES Certificado(Certificado_Id) ON DELETE CASCADE,
-    CONSTRAINT fk_lc_legislacion FOREIGN KEY (Legislacion_Id) REFERENCES Legislacion(Legislacion_Id) ON DELETE CASCADE
+    CONSTRAINT pk_leg_cert PRIMARY KEY (Certificado_Id, Legislacion_Id),
+    CONSTRAINT fk_lc_cert FOREIGN KEY (Certificado_Id) REFERENCES Certificado(Certificado_Id) ON DELETE CASCADE,
+    CONSTRAINT fk_lc_leg FOREIGN KEY (Legislacion_Id) REFERENCES Legislacion(Legislacion_Id) ON DELETE CASCADE
 );
 
 CREATE TABLE Inspeccion_Legislacion (
     Inspeccion_Id NUMBER(14),
     Legislacion_Id NUMBER(14),
-    CONSTRAINT pk_inspeccion_legislacion PRIMARY KEY (Inspeccion_Id, Legislacion_Id),
-    CONSTRAINT fk_il_inspeccion FOREIGN KEY (Inspeccion_Id) REFERENCES Inspeccion(Inspeccion_Id) ON DELETE CASCADE,
-    CONSTRAINT fk_il_legislacion FOREIGN KEY (Legislacion_Id) REFERENCES Legislacion(Legislacion_Id) ON DELETE CASCADE
+    CONSTRAINT pk_ins_leg PRIMARY KEY (Inspeccion_Id, Legislacion_Id),
+    CONSTRAINT fk_il_ins FOREIGN KEY (Inspeccion_Id) REFERENCES Inspeccion(Inspeccion_Id) ON DELETE CASCADE,
+    CONSTRAINT fk_il_leg FOREIGN KEY (Legislacion_Id) REFERENCES Legislacion(Legislacion_Id) ON DELETE CASCADE
 );
 
-CREATE TABLE Sancion (
-    Sancion_Id NUMBER(14) PRIMARY KEY,
-    Legislacion_Id NUMBER(14),
-    CONSTRAINT fk_sancion_legislacion FOREIGN KEY (Legislacion_Id) REFERENCES Legislacion(Legislacion_Id) ON DELETE CASCADE
+CREATE TABLE Prueba_Inspector (
+    Prueba_Id NUMBER(14),
+    Inspector_Id NUMBER(14),
+    CONSTRAINT pk_prueba_ins PRIMARY KEY (Prueba_Id, Inspector_Id),
+    CONSTRAINT fk_pi_prueba FOREIGN KEY (Prueba_Id) REFERENCES Prueba(Prueba_Id) ON DELETE CASCADE,
+    CONSTRAINT fk_pi_inspector FOREIGN KEY (Inspector_Id) REFERENCES Inspector(Inspector_Id) ON DELETE CASCADE
 );
+
+DROP TABLE Autonomica CASCADE CONSTRAINT PURGE;
+DROP TABLE Certificado CASCADE CONSTRAINT PURGE;
+DROP TABLE Colaboradores CASCADE CONSTRAINT PURGE;
+DROP TABLE Inspeccion CASCADE CONSTRAINT PURGE;
+DROP TABLE Inspeccion_Legislacion CASCADE CONSTRAINT PURGE;
+DROP TABLE Inspector CASCADE CONSTRAINT PURGE;
+DROP TABLE Legislacion CASCADE CONSTRAINT PURGE;
+DROP TABLE Legislacion_Certificado CASCADE CONSTRAINT PURGE;
+DROP TABLE Legislacion_Inspector CASCADE CONSTRAINT PURGE;
+DROP TABLE Local CASCADE CONSTRAINT PURGE;
+DROP TABLE Nacional CASCADE CONSTRAINT PURGE;
+DROP TABLE Observacion CASCADE CONSTRAINT PURGE;
+DROP TABLE Organizacion_ITSS CASCADE CONSTRAINT PURGE;
+DROP TABLE Prueba CASCADE CONSTRAINT PURGE;
+DROP TABLE Prueba_Inspector CASCADE CONSTRAINT PURGE;
+DROP TABLE Registro_Inspeccion CASCADE CONSTRAINT PURGE;
+DROP TABLE Sede CASCADE CONSTRAINT PURGE;
+DROP TABLE Administracion CASCADE CONSTRAINT PURGE;
