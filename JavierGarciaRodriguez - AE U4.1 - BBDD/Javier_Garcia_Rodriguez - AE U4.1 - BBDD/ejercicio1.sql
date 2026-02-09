@@ -78,3 +78,56 @@ CREATE TABLE Matricula_Modulo (
     CONSTRAINT fk_mm_matricula FOREIGN KEY (Matricula_Id) REFERENCES Matricula(IdMatricula) ON DELETE CASCADE,
     CONSTRAINT fk_mm_modulo FOREIGN KEY (Modulo_Id) REFERENCES Modulo(IdModulo) ON DELETE CASCADE
 );
+
+--INSERTS
+
+INSERT INTO Sede VALUES (1, 954123456, 'Avda. de Andalucía 15, Sevilla');
+INSERT INTO Sede VALUES (2, 956987654, 'C/ Mayor 22, Cádiz');
+INSERT INTO Sede VALUES (3, 955456789, 'C/ Real 10, Huelva');
+
+INSERT INTO CicloFormativo VALUES (1, 'Desarrollo de Aplicaciones Web', 2, 30, 45);
+INSERT INTO CicloFormativo VALUES (2, 'Desarrollo de Aplicaciones Multiplataforma', 2, 30, 50);
+INSERT INTO CicloFormativo VALUES (3, 'Administración de Sistemas Informáticos en Red', 2, 25, 40);
+
+INSERT INTO Sede_CicloFormativo VALUES (1, 1);
+INSERT INTO Sede_CicloFormativo VALUES (1, 2);
+INSERT INTO Sede_CicloFormativo VALUES (2, 3);
+INSERT INTO Sede_CicloFormativo VALUES (3, 1);
+
+INSERT INTO Persona VALUES (1, 'Rosa', 'Blanco', 'Montero', '12121212D', 'Estudiante', 'rosa@email.com', 'C/ Luna 3');
+INSERT INTO Persona VALUES (2, 'Juan', 'Muñoz', 'Sanz', '23232323E', 'Estudiante', 'juan@email.com', 'C/ Sol 8');
+INSERT INTO Persona VALUES (3, 'Javier', 'Prada', 'Oliva', '11111111Y', 'Docente TIC', 'javier@email.com', 'Avda. Paz 12');
+INSERT INTO Persona VALUES (4, 'María', 'Pastor', NULL, '44444444I', 'Docente FOL', 'maria@email.com', 'C/ Olivo 6');
+
+INSERT INTO Alumno VALUES (1, 'BACHILLER', 'PROMOCIONA_CURSO', 1, 1);
+INSERT INTO Alumno VALUES (2, 'GRADO_MEDIO', 'REPETIDOR', 2, 2);
+INSERT INTO Alumno VALUES (3, 'PRUEBA_ACCESO', 'PROMOCIONA_CURSO', 1, 1);
+
+INSERT INTO Docente VALUES (1, 'Javier', '11111111Y', 'Prada', 'Programación', 3);
+INSERT INTO Docente VALUES (2, 'María', '44444444I', 'Pastor', 'FOL', 4);
+INSERT INTO Docente VALUES (3, 'Daniel', '22222222H', 'Muñiz', 'Bases de Datos', 3);
+
+INSERT INTO Modulo VALUES (1, 'Programación', 1, 1, NULL, 1);
+INSERT INTO Modulo VALUES (2, 'Bases de Datos', 1, 1, NULL, 3);
+INSERT INTO Modulo VALUES (3, 'Formación y Orientación Laboral', 1, 2, NULL, 2);
+
+INSERT INTO Matricula VALUES (1, 1, '21/22', 7.50);
+INSERT INTO Matricula VALUES (2, 2, '21/22', 5.00);
+INSERT INTO Matricula VALUES (3, 3, '21/22', NULL);
+
+INSERT INTO Matricula_Modulo VALUES (1, 1);
+INSERT INTO Matricula_Modulo VALUES (1, 2);
+INSERT INTO Matricula_Modulo VALUES (2, 2);
+INSERT INTO Matricula_Modulo VALUES (3, 3);
+
+--DROPS
+
+DROP TABLE ALUMNO CASCADE CONSTRAINT PURGE;
+DROP TABLE CICLOFORMATIVO CASCADE CONSTRAINT PURGE;
+DROP TABLE DOCENTE CASCADE CONSTRAINT PURGE;
+DROP TABLE MATRICULA CASCADE CONSTRAINT PURGE;
+DROP TABLE MATRICULA_MODULO CASCADE CONSTRAINT PURGE;
+DROP TABLE MODULO CASCADE CONSTRAINT PURGE;
+DROP TABLE PERSONA CASCADE CONSTRAINT PURGE;
+DROP TABLE SEDE CASCADE CONSTRAINT PURGE;
+DROP TABLE SEDE_CICLOFORMATIVO CASCADE CONSTRAINT PURGE;
